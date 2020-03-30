@@ -135,6 +135,9 @@ train.info()
 for df in datasets:
     df.loc[pd.isnull(df['Fare']),'Fare'] = df['Fare'].mean()
 
+for df in datasets:
+    df['Fare']/=df['Fare'].std(axis=0)
+
 # 热图
 #plt.figure(figsize=(12,8))
 #sns.heatmap(train.corr(), annot=True)
@@ -196,9 +199,16 @@ train.head()
 train.describe()
 
 # 训练数据
-x_train = train.drop(['PassengerId','Survived'],axis=1)
-y_train = train['Survived']
+x_train0 = train.drop(['PassengerId','Survived'],axis=1)
+y_train0 = train['Survived']
 
 # 测试数据
-x_test = test.drop(['PassengerId'],axis=1)
-y_test = test_submission.drop(['PassengerId'],axis=1)
+x_test0 = test.drop(['PassengerId'],axis=1)
+y_test0 = test_submission.drop(['PassengerId'],axis=1)
+
+# 数据准备
+x_train = x_train0.values.astype('float32')
+y_train = y_train0.values.astype('float32')
+
+x_test = x_test0.values.astype('float32')
+y_test = y_test0.values.astype('float32')

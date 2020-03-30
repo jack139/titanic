@@ -8,27 +8,29 @@ from data_prepare import *
 
 # 三层网络 模型定义
 model = models.Sequential()
-model.add(layers.Dense(16, activation='relu', input_shape=(8,)))
-model.add(layers.Dense(16, activation='relu'))
+model.add(layers.Dense(4, activation='tanh', input_shape=(8,)))
+model.add(layers.Dense(4, activation='tanh' ))
+model.add(layers.Dense(4, activation='tanh' ))
 model.add(layers.Dense(1, activation='sigmoid'))
 
 #编译模型
 model.compile(optimizer='rmsprop',
 			  loss='mse',
+			  #loss='binary_crossentropy',
 			  metrics=['acc']
 			  )
 
 #留出验证集
-x_val = x_train[:50]
-partial_x_train = x_train[50:]
-y_val = y_train[:50]
-partial_y_train = y_train[50:]
+x_val = x_train[:100]
+partial_x_train = x_train[100:]
+y_val = y_train[:100]
+partial_y_train = y_train[100:]
 
 
 #训练模型
-history=model.fit(partial_x_train,
+history = model.fit(partial_x_train,
 		  partial_y_train,
-		  epochs=20,
+		  epochs=100,
 		  batch_size=4,
 		  validation_data=(x_val, y_val))
 
