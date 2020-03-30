@@ -8,14 +8,13 @@ from data_prepare import *
 
 # 三层网络 模型定义
 model = models.Sequential()
-model.add(layers.Dense(32, activation='relu', input_shape=(8,)))
-model.add(layers.Dense(32, activation='relu'))
+model.add(layers.Dense(16, activation='relu', input_shape=(8,)))
+model.add(layers.Dense(16, activation='relu'))
 model.add(layers.Dense(1, activation='sigmoid'))
 
 #编译模型
 model.compile(optimizer='rmsprop',
-			  loss='binary_crossentropy',
-			  #loss='mse',
+			  loss='mse',
 			  metrics=['acc']
 			  )
 
@@ -27,13 +26,25 @@ partial_y_train = y_train[50:]
 
 
 #训练模型
-model.fit(partial_x_train,
+history=model.fit(partial_x_train,
 		  partial_y_train,
-		  epochs=30,
-		  batch_size=8,
+		  epochs=20,
+		  batch_size=4,
 		  validation_data=(x_val, y_val))
 
-
+# 评估预测结果
 results = model.evaluate(x_test, y_test)
 print(results)
+
+# 用模型进行评估，输出预测结果集
+predict = model.predict(x_test)
+
+my_submission = pd.DataFrame({
+	'PassengerId': test.PassengerId, 
+	'Survived': pd.Series(predict.reshape((1,-1))[0]).round().astype(int)
+})
+
+my_submission.head()
+
+my_submission.to_csv('submission.csv', index=False)
 
