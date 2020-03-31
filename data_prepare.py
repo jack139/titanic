@@ -40,27 +40,6 @@ train.groupby('Title',as_index=False)['Survived'].mean().sort_values('Survived',
 # 建分类信息，可通过title进行分类query
 def encTitle(title):
     title = str(title)
-    if title in ('Mr'):
-        return 1
-    elif title in ('Miss','Mrs'):
-        return 2
-    elif title in ('Master','Sir'):
-        return 3
-    elif title in ('Rev','Jonkheer','Don','Countess','Col'):
-        return 4
-    elif title in ('Dr'):
-        return 5
-    elif title in ('Major','Capt'):
-        return 6
-    elif title in ('Lady','Mlle','Don'):
-        return 7
-    elif title in ('Mme','Ms'):
-        return 8
-    else:
-        return 9
-    
-def encTitle(title):
-    title = str(title)
     if title in ('Jonkheer','Don','Rev','Capt'):
         return 1
     elif title in ('Mr'):
@@ -80,7 +59,6 @@ for df in datasets:
 train.TitleEnc.value_counts(dropna=False)
 
 train.query("TitleEnc == 7")
-
 
 # 清理数据：cabin, name, title, ticket  
 for df in datasets:
@@ -135,8 +113,8 @@ train.info()
 for df in datasets:
     df.loc[pd.isnull(df['Fare']),'Fare'] = df['Fare'].mean()
 
-for df in datasets:
-    df['Fare']/=df['Fare'].std(axis=0)
+#for df in datasets:
+#    df['Fare']/=df['Fare'].std(axis=0)
 
 # 热图
 #plt.figure(figsize=(12,8))
@@ -206,9 +184,15 @@ y_train0 = train['Survived']
 x_test0 = test.drop(['PassengerId'],axis=1)
 y_test0 = test_submission.drop(['PassengerId'],axis=1)
 
-# 数据准备
-x_train = x_train0.values.astype('float32')
-y_train = y_train0.values.astype('float32')
 
-x_test = x_test0.values.astype('float32')
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train0)
+x_test = sc.fit_transform(x_test0)
+
+# 数据准备
+#x_train = x_train0.values.astype('float32')
+y_train = y_train0.values.astype('float32')
+#
+#x_test = x_test0.values.astype('float32')
 y_test = y_test0.values.astype('float32')
