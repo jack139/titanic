@@ -29,13 +29,16 @@ data_test.iloc[:,2] = label_encoder_sex.fit_transform(data_test.iloc[:,2])
 data_train = data_train[['PassengerId','Sex','SibSp','Parch','TicketClass','Survived']]
 data_test = data_test[['PassengerId','Sex','SibSp','Parch','TicketClass']]
 
-X_train = data_train.iloc[:,0:5]   # Inputs
+x_train = data_train.iloc[:,0:5]   # Inputs
 y_train = data_train.iloc[:,5]     # Output (Survived)
-
+y_train = y_train.values
 
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
-X_train = sc.fit_transform(X_train)
-X_test = sc.fit_transform(data_test)
+x_train = sc.fit_transform(x_train)
+x_test = sc.fit_transform(data_test)
 
+y_test = data_check['Survived']
+y_test = y_test.values
 
+test = data_test

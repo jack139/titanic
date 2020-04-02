@@ -57,34 +57,11 @@ train.groupby('Title',as_index=False)['Survived'].mean().sort_values('Survived',
     0       Capt  0.000000
 '''
 
-# 建分类信息，可通过title进行分类query,  ‘Dona’ 是在test里
-def encTitle(title):
-    title = str(title)
-    if title in ('Jonkheer','Don','Rev','Capt','Dona'):
-        return 1
-    elif title in ('Mr'):
-        return 2
-    elif title in ('Dr','Major','Col','Master'):
-        return 3
-    elif title in ('Miss','Mrs'):
-        return 4
-    elif title in ('Ms','Mme','Sir'):
-        return 5
-    elif title in ('Mlle','Lady','Countess'):
-        return 6
-
-for df in datasets:
-    df['TitleEnc'] = df['Title'].apply(encTitle)
-    
-train.TitleEnc.value_counts(dropna=False)
-
-train.query("TitleEnc == 7")
-
 # 清理数据：cabin, name, title, ticket  
 for df in datasets:
     df['hasCabin'] = np.where(pd.isnull(df['Cabin']),0,1)
     df.loc[pd.isnull(df['Embarked']),'Embarked'] = 'None'
-    df.drop(['Title','Name','Ticket','Cabin'],axis=1,inplace=True)
+    df.drop(['Name','Ticket','Cabin'],axis=1,inplace=True)
     
 train.head()
 
@@ -96,19 +73,23 @@ le['Sex'] = LabelEncoder()
 le['Sex'].fit(train.Sex)
 le['Embarked'] = LabelEncoder()
 le['Embarked'].fit(train.Embarked)
+le['Title'] = LabelEncoder()
+le['Title'].fit(pd.concat([train.Title, test.Title], axis=0))
 
 for df in datasets:
     df['Sex'] = le['Sex'].transform(df['Sex'])
     df['Embarked'] = le['Embarked'].transform(df['Embarked'])
+    df['TitleEnc'] = le['Title'].transform(df['Title'])
     
 train.head()
 
+train.TitleEnc.value_counts(dropna=False)
+
 # 统计 family， 有 伴侣或家属
 for df in datasets:
-    df['Family'] = np.where((df['SibSp'] > 1),0,np.where((df['Parch'] > 1),2,1))
+    df['Family'] = np.where((df['SibSp'] > 2),0,np.where((df['Parch'] < 2),2,1))
     
 print('Sobreviventes:\n',train.groupby(['Family'])['Survived'].mean())
-
 
 # title, family, age 关系
 titles = train.TitleEnc.unique()
@@ -138,19 +119,6 @@ for df in datasets:
 #sns.heatmap(train.corr(), annot=True)
 #plt.show()
 
-# title 生存概率
-print('Sobreviventes:\n',train.groupby(['TitleEnc'])['Survived'].mean())
-
-# 调整 title 参数
-#def newTitleEnc(n):
-#    if n in (5,6):
-#        return 5
-#    return n
-#
-#for df in datasets:
-#    df.loc[:,'TitleEnc'] = df['TitleEnc'].apply(newTitleEnc)
-#
-#print('Sobreviventes:\n',train.groupby(['TitleEnc'])['Survived'].mean())
 
 # 年龄
 def ageGroup(age):
@@ -169,7 +137,7 @@ print('Sobreviventes:\n',train.groupby(['AgeGroup'])['Survived'].mean())
 
 # 综合属性，---- 运行有错误
 for df in datasets:
-    df['Preference'] = np.where(df['TitleEnc']>2, 10, 1) # 有错误，where需要补全
+    df['Preference'] = np.where(df['TitleEnc']>2, 10, 2) # 有错误，where需要补全
     df['Preference'] = df['Preference'] * df['Sex']
     df['Preference'] = df['Preference'] // df['Pclass']
     df['Preference'] = df['Preference'] // df['AgeGroup']
@@ -178,7 +146,7 @@ print('Sobreviventes:\n',train.groupby(['Preference'])['Survived'].mean())
 
 # 清除 无用的列
 for df in datasets:
-    df.drop(['Age','SibSp','Parch'],axis=1,inplace=True)
+    df.drop(['Title', 'Age','SibSp','Parch'],axis=1,inplace=True)
     
 train.head()
 
@@ -200,14 +168,10 @@ x_test0 = test.drop(['PassengerId'],axis=1)
 y_test0 = test_submission['Survived']
 
 
-#from sklearn.preprocessing import StandardScaler
-#sc = StandardScaler()
-#x_train = sc.fit_transform(x_train0)
-#x_test = sc.fit_transform(x_test0)
-
-x_train = x_train0.values.astype('float32')
-x_test = x_test0.values.astype('float32')
-
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train0)
+x_test = sc.fit_transform(x_test0)
 
 # 数据准备
 y_train = y_train0.values.astype('float32')
