@@ -13,17 +13,9 @@ import os
 print(os.listdir("./input"))
 
 train = pd.read_csv('./input/train.csv')
-train.head()
-
 test = pd.read_csv('./input/test.csv')
-test.head()
-
-test_submission = pd.read_csv('./input/gender_submission.csv')
-test_submission.head()
-
-train.info()
-test.info()
-test_submission.info()
+#test_submission = pd.read_csv('./input/gender_submission.csv')
+test_submission = pd.read_csv('./input/target.csv')
 
 datasets = [train,test]
 
@@ -79,75 +71,28 @@ le['Title'].fit(pd.concat([train.Title, test.Title], axis=0))
 for df in datasets:
     df['Sex'] = le['Sex'].transform(df['Sex'])
     df['Embarked'] = le['Embarked'].transform(df['Embarked'])
-    df['TitleEnc'] = le['Title'].transform(df['Title'])
+    df['Title'] = le['Title'].transform(df['Title'])
     
 train.head()
 
-train.TitleEnc.value_counts(dropna=False)
+train.Title.value_counts(dropna=False)
 
-# 统计 family， 有 伴侣或家属
+
+# age 用平均值填空值
 for df in datasets:
-    df['Family'] = np.where((df['SibSp'] > 2),0,np.where((df['Parch'] < 2),2,1))
-    
-print('Sobreviventes:\n',train.groupby(['Family'])['Survived'].mean())
-
-# title, family, age 关系
-titles = train.TitleEnc.unique()
-family = train.Family.unique()
-titles.sort()
-family.sort()
-
-for f in family:
-    for title in titles:
-        for df in datasets:
-            df.loc[(pd.isnull(df['Age'])) & 
-                   (df['TitleEnc'] == title) &
-                   (df['Family'] == f), 'Age'] = df[(df['TitleEnc'] == title) & (df['Family'] == f)]['Age'].mean()
+    df.loc[pd.isnull(df['Age']), 'Age'] = df['Age'].mean()
 
 for df in datasets:
     df.loc[:,'Age'] = np.round(df['Age'])
             
-train.info()
-
-
 # 票价
 for df in datasets:
     df.loc[pd.isnull(df['Fare']),'Fare'] = df['Fare'].mean()
 
-# 热图
-#plt.figure(figsize=(12,8))
-#sns.heatmap(train.corr(), annot=True)
-#plt.show()
 
+train.info()
+test.info()
 
-# 年龄
-def ageGroup(age):
-    if age < 5 or age > 79:
-        return 1
-    if age < 18:
-        return 2
-    if age < 60:
-        return 3
-    return 4
-
-for df in datasets:
-    df['AgeGroup'] = df['Age'].apply(ageGroup)
-    
-print('Sobreviventes:\n',train.groupby(['AgeGroup'])['Survived'].mean())
-
-# 综合属性，---- 运行有错误
-for df in datasets:
-    df['Preference'] = np.where(df['TitleEnc']>2, 10, 2) # 有错误，where需要补全
-    df['Preference'] = df['Preference'] * df['Sex']
-    df['Preference'] = df['Preference'] // df['Pclass']
-    df['Preference'] = df['Preference'] // df['AgeGroup']
-
-print('Sobreviventes:\n',train.groupby(['Preference'])['Survived'].mean())
-
-# 清除 无用的列
-for df in datasets:
-    df.drop(['Title', 'Age','SibSp','Parch'],axis=1,inplace=True)
-    
 train.head()
 
 
@@ -167,12 +112,13 @@ y_train0 = train['Survived']
 x_test0 = test.drop(['PassengerId'],axis=1)
 y_test0 = test_submission['Survived']
 
+# 数据准备
 
+# 规范化
 from sklearn.preprocessing import StandardScaler
 sc = StandardScaler()
 x_train = sc.fit_transform(x_train0)
 x_test = sc.fit_transform(x_test0)
 
-# 数据准备
 y_train = y_train0.values.astype('float32')
 y_test = y_test0.values.astype('float32')

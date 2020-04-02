@@ -18,7 +18,8 @@ train.head()
 test = pd.read_csv('./input/test.csv')
 test.head()
 
-test_submission = pd.read_csv('./input/gender_submission.csv')
+#test_submission = pd.read_csv('./input/gender_submission.csv')
+test_submission = pd.read_csv('./input/target.csv')
 test_submission.head()
 
 train.info()

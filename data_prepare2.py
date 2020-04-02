@@ -8,7 +8,8 @@ import numpy as np
     
 data_train = pd.read_csv('input/train.csv')
 data_test = pd.read_csv('input/test.csv')
-data_check = pd.read_csv('input/gender_submission.csv')
+#data_check = pd.read_csv('input/gender_submission.csv')
+data_check = pd.read_csv('input/target.csv')
 
 #changing column name
 data_train = data_train.rename(columns = {'Pclass' : 'TicketClass'})
