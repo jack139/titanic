@@ -5,12 +5,12 @@ from keras import models
 from keras import layers
 from keras import optimizers
 
-from data_prepare5 import *
+from data_prepare4 import *
 
 # 模型参数
-epochs_num = 30
+epochs_num = 15
 batch_size = 100
-input_dim = len(x_train[0])
+input_dim = x_train.shape[1]
 
 print('input_dim=', input_dim, ' batch_size=', batch_size, ' epochs_num=', epochs_num)
 
@@ -18,14 +18,24 @@ print('input_dim=', input_dim, ' batch_size=', batch_size, ' epochs_num=', epoch
 def get_model(input_dim):
     # 三层网络 模型定义
     model = models.Sequential()
-    model.add(layers.Dense(units = 10, kernel_initializer = 'uniform', activation = 'relu', input_dim = input_dim))
-    for i in range(0, 3):
-        model.add(layers.Dense(units = 5, kernel_initializer = 'uniform', activation = 'relu'))
-        model.add(layers.Dropout(.20))
-    model.add(layers.Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
+    model.add(layers.Dense(units = 100, kernel_initializer = 'uniform', activation = 'relu', input_dim = input_dim))
+    model.add(layers.Dense(units = 50, kernel_initializer = 'uniform', activation = 'relu'))
+    model.add(layers.Dense(units = 2, kernel_initializer = 'uniform', activation = 'softmax'))
     #编译模型
     model.compile(optimizer=optimizers.Adam(learning_rate=0.01),
-        loss='binary_crossentropy', metrics=['accuracy']) 
+        loss='categorical_crossentropy', metrics=['accuracy']) 
+
+    #model = Sequential()
+    #model.add(layers.Dense(units=50, input_dim=input_dim, kernel_initializer='normal', bias_initializer='zeros'))
+    #model.add(layers.Activation('relu'))
+    #for i in range(0, 5):
+    #    model.add(layers.Dense(units=20, kernel_initializer='normal', bias_initializer='zeros'))
+    #    model.add(layers.Activation('relu'))
+    #    model.add(layers.Dropout(.40))
+    #model.add(layers.Dense(units=2))
+    #model.add(layers.Activation('softmax'))
+    #model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+
     return model
 
 #np.random.shuffle(data)
@@ -74,13 +84,13 @@ results = model.evaluate(x_test, y_test, verbose=1)
 print('predict: ', results)
 
 # 用模型进行评估，输出预测结果集
-predict = model.predict(x_test)
+predict = model.predict_classes(x_test)
 
 
 # 生成并保存提交文件
 my_submission = pd.DataFrame({
-    'PassengerId': test.PassengerId, 
-    'Survived': pd.Series(predict.reshape((1,-1))[0]).round().astype(int)
+    'PassengerId': test_data.index, 
+    'Survived': predict
 })
 
 my_submission.head()
@@ -88,19 +98,18 @@ my_submission.head()
 my_submission.to_csv('submission.csv', index=False)
 
 # 计算正确率
-match = 0
-nomatch = 0
-predict2 = predict.round() 
-for x in range(len(y_test)):
-    if predict2[x][0] == y_test[x]:
-        match = match +1
-    else:
-        nomatch = nomatch +1
-
-print('match=', match)
-print('nomatch=', nomatch)
-print(match/(match+nomatch))
-
+#match = 0
+#nomatch = 0
+#predict2 = predict.round() 
+#for x in range(len(y_test)):
+#    if predict2[x][0] == y_test[x]:
+#        match = match +1
+#    else:
+#        nomatch = nomatch +1
+#
+#print('match=', match)
+#print('nomatch=', nomatch)
+#print(match/(match+nomatch))
 
 
 import matplotlib.pyplot as plt

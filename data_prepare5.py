@@ -154,6 +154,13 @@ print('Sobreviventes:\n',train.groupby(['TitleEnc'])['Survived'].mean())
 #print('Sobreviventes:\n',train.groupby(['TitleEnc'])['Survived'].mean())
 
 # 年龄
+
+# 对控制年龄进行预测
+import data_prepare4
+train['Age'] = data_prepare4.train_data['Age']
+test['Age'] = data_prepare4.test_data['Age']
+
+# 年龄分组
 def ageGroup(age):
     if age < 5 or age > 79:
         return 1
@@ -179,7 +186,7 @@ print('Sobreviventes:\n',train.groupby(['Preference'])['Survived'].mean())
 
 # 清除 无用的列
 for df in datasets:
-    df.drop(['Age','SibSp','Parch'],axis=1,inplace=True)
+    df.drop(['AgeGroup','SibSp','Parch'],axis=1,inplace=True)
     
 train.head()
 
@@ -200,15 +207,14 @@ y_train0 = train['Survived']
 x_test0 = test.drop(['PassengerId'],axis=1)
 y_test0 = test_submission['Survived']
 
-
-#from sklearn.preprocessing import StandardScaler
-#sc = StandardScaler()
-#x_train = sc.fit_transform(x_train0)
-#x_test = sc.fit_transform(x_test0)
-
 # 数据准备
-x_train = x_train0.values.astype('float32')
-x_test = x_test0.values.astype('float32')
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train0)
+x_test = sc.fit_transform(x_test0)
+
+#x_train = x_train0.values.astype('float32')
+#x_test = x_test0.values.astype('float32')
 
 y_train = y_train0.values.astype('float32')
 y_test = y_test0.values.astype('float32')
