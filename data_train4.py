@@ -5,10 +5,12 @@ from keras import models
 from keras import layers
 from keras import optimizers
 
+from mish.mish import mish
+
 from data_prepare4 import *
 
 # 模型参数
-epochs_num = 15
+epochs_num = 100
 batch_size = 100
 input_dim = x_train.shape[1]
 
@@ -16,25 +18,29 @@ print('input_dim=', input_dim, ' batch_size=', batch_size, ' epochs_num=', epoch
 
 # 创建模型
 def get_model(input_dim):
-    # 三层网络 模型定义
+    ## 三层网络 模型定义
     model = models.Sequential()
-    model.add(layers.Dense(units = 100, kernel_initializer = 'uniform', activation = 'relu', input_dim = input_dim))
-    model.add(layers.Dense(units = 50, kernel_initializer = 'uniform', activation = 'relu'))
-    model.add(layers.Dense(units = 2, kernel_initializer = 'uniform', activation = 'softmax'))
-    #编译模型
-    model.compile(optimizer=optimizers.Adam(learning_rate=0.01),
-        loss='categorical_crossentropy', metrics=['accuracy']) 
 
-    #model = Sequential()
-    #model.add(layers.Dense(units=50, input_dim=input_dim, kernel_initializer='normal', bias_initializer='zeros'))
-    #model.add(layers.Activation('relu'))
-    #for i in range(0, 5):
-    #    model.add(layers.Dense(units=20, kernel_initializer='normal', bias_initializer='zeros'))
-    #    model.add(layers.Activation('relu'))
-    #    model.add(layers.Dropout(.40))
-    #model.add(layers.Dense(units=2))
-    #model.add(layers.Activation('softmax'))
-    #model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+    #model.add(layers.Dense(units = 100, kernel_initializer = 'uniform', activation = 'relu', input_dim = input_dim))
+    #model.add(layers.Dense(units = 50, kernel_initializer = 'uniform', activation = 'relu'))
+    #model.add(layers.Dense(units = 2, kernel_initializer = 'uniform', activation = 'softmax'))
+
+    model = Sequential()
+
+    model.add(layers.Dense(units=100, input_dim=input_dim, kernel_initializer='uniform'))
+    #model.add(layers.Activation('relu', name='relu_1'))
+    model.add(layers.Activation(mish, name='mish_1'))
+    model.add(layers.Dense(units=50, kernel_initializer='uniform'))
+    #model.add(layers.Activation('relu', name='relu_2'))
+    model.add(layers.Activation(mish, name='mish_2'))
+    model.add(layers.Dense(units=2, kernel_initializer='uniform'))
+    model.add(layers.Activation('softmax'))
+
+    model.summary()
+
+    ##编译模型
+    model.compile(optimizer=optimizers.Adam(learning_rate=0.01), 
+            loss='categorical_crossentropy', metrics=['accuracy']) 
 
     return model
 
